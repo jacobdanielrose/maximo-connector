@@ -18,24 +18,45 @@ import lombok.ToString;
  * configuration, add it here and ensure it is defined in your BundleManifest's schema
  */
 
-// Todo: If connector schema is modified with new form varibales add them here. Remove the ones that are no longer
-// required.
+// Configuration model for IBM Maximo connector
+// Supports multiple authentication methods: Basic, API Key, and OAuth 2.0
 @Data
-@ToString(exclude = "password")
+@ToString(exclude = {"password", "apiKey", "oauthClientSecret"})
 public class Configuration {
     protected boolean data_flow = true;
     protected String[] datasource_type = { "tickets" };
-    // The historical start time since the epoch to begin collecting
+    
+    // Historical data collection time range
     protected long start = 0;
-    // The historical end time since the epoch to end collecting
     protected long end = 0;
+    
+    // Basic configuration
+    protected String url;
+    protected String description;
+    protected String collectionMode;
+    protected int issueSamplingRate = 5; // Default 5 minutes
+    protected String mappings;
+    
+    // Authentication type: "basic", "apikey", or "oauth"
+    protected String authType = "basic";
+    
+    // Basic Authentication
     protected String username;
     protected String password;
+    
+    // API Key Authentication
+    protected String apiKey;
+    
+    // OAuth 2.0 Authentication
+    protected String oauthTokenUrl;
+    protected String oauthClientId;
+    protected String oauthClientSecret;
+    
+    // Maximo-specific configuration
+    protected String maximoOrgId = "EAGLENA"; // Default organization
+    protected String maximoSiteId;
+    
+    // Legacy fields (kept for compatibility)
     protected String owner;
     protected String repo;
-    protected String url;
-    protected String collectionMode;
-    protected int issueSamplingRate;
-    protected String mappings;
-    protected String description;
 }
