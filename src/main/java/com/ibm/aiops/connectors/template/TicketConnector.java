@@ -98,8 +98,7 @@ public class TicketConnector extends NotificationConnectorBase {
     }
 
     // This is triggered when an integration is created or updated.
-    // This is to verify the connection and to make a connection to the outbound system. d
-    // Todo: Have the connection or set up to your system here
+    // This is to verify the connection and to make a connection to the outbound system.
     @Override
     public ActionConnectorSettings onConfigure(ConnectorConfigurationHelper config)
             throws ConnectorException, ConnectorActionException {
@@ -113,7 +112,25 @@ public class TicketConnector extends NotificationConnectorBase {
             }
 
             logger.log(Level.INFO, "Configuring ConnectionId: " + config.getConnectionID());
-            // Verify the connection here if needed
+            
+            // Test connection to Maximo
+            logger.log(Level.INFO, "Testing connection to Maximo...");
+            MaximoHttpClient maximoClient = new MaximoHttpClient(newConfiguration);
+            
+            try {
+                boolean connectionSuccess = maximoClient.testConnection().get();
+                if (!connectionSuccess) {
+                    logger.log(Level.SEVERE, "Maximo connection test failed");
+                    emitStatus(ConnectorStatus.Phase.Errored, Duration.ofMinutes(5));
+                    throw new ConnectorException("Failed to connect to Maximo. Please verify URL and credentials.");
+                }
+                logger.log(Level.INFO, "Maximo connection test successful");
+            } catch (Exception testEx) {
+                logger.log(Level.SEVERE, "Error testing Maximo connection", testEx);
+                emitStatus(ConnectorStatus.Phase.Errored, Duration.ofMinutes(5));
+                throw new ConnectorException("Failed to connect to Maximo: " + testEx.getMessage());
+            }
+            
             this._configuration.set(newConfiguration);
 
             collectData(newConfiguration); // Polling data.
@@ -121,10 +138,15 @@ public class TicketConnector extends NotificationConnectorBase {
             emitStatus(ConnectorStatus.Phase.Running, Duration.ofMinutes(5)); // On successful verification, show status
                                                                               // as Running in the Integration UI.
 
-            logger.log(Level.INFO, "Integration Configured", this._configuration.get());
+            logger.log(Level.INFO, "Integration Configured Successfully", this._configuration.get());
+        } catch (ConnectorException ex) {
+            // Re-throw ConnectorException to show error in UI
+            emitStatus(ConnectorStatus.Phase.Errored, Duration.ofMinutes(5));
+            throw ex;
         } catch (Exception ex) {
-            emitStatus(ConnectorStatus.Phase.Errored, Duration.ofMinutes(5)); // If there are any errors, show status as
-                                                                              // Error in the Integration UI.
+            logger.log(Level.SEVERE, "Error configuring connector", ex);
+            emitStatus(ConnectorStatus.Phase.Errored, Duration.ofMinutes(5));
+            throw new ConnectorException("Configuration failed: " + ex.getMessage());
         }
         return ActionConnectorSettings.builder().sourceUri(SELF_SOURCE).build();
     }
