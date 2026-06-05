@@ -16,11 +16,19 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.util.Base64;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 import org.json.JSONObject;
 
@@ -52,8 +60,12 @@ public class MaximoHttpClient {
     private String maximoSiteId;
     
     public MaximoHttpClient(Configuration config) {
+        // Create SSL context that trusts all certificates
+        SSLContext sslContext = createTrustAllSSLContext();
+        
         this.httpClient = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(30))
+                .sslContext(sslContext)
                 .build();
         
         this.baseUrl = config.getUrl().replaceAll("/$", "");
@@ -65,6 +77,37 @@ public class MaximoHttpClient {
         initializeAuth(config);
     }
     
+    /**
+     * Create an SSL context that trusts all certificates.
+     * WARNING: This is for development/testing only. In production, use proper certificate validation.
+     */
+    private SSLContext createTrustAllSSLContext() {
+        try {
+            TrustManager[] trustAllCerts = new TrustManager[]{
+                new X509TrustManager() {
+                    public X509Certificate[] getAcceptedIssuers() {
+                        return new X509Certificate[0];
+                    }
+                    public void checkClientTrusted(X509Certificate[] certs, String authType) {
+                        // Trust all client certificates
+                    }
+                    public void checkServerTrusted(X509Certificate[] certs, String authType) {
+                        // Trust all server certificates
+                    }
+                }
+            };
+            
+            SSLContext sslContext = SSLContext.getInstance("TLS");
+            sslContext.init(null, trustAllCerts, new SecureRandom());
+            
+            logger.log(Level.INFO, "SSL context configured to trust all certificates");
+            return sslContext;
+        } catch (NoSuchAlgorithmException | KeyManagementException e) {
+            logger.log(Level.SEVERE, "Failed to create SSL context", e);
+            throw new RuntimeException("Failed to initialize SSL context", e);
+        }
+    }
+    
     private void initializeAuth(Configuration config) {
         switch (authType.toLowerCase()) {
             case "basic":
@@ -74,22 +117,26 @@ public class MaximoHttpClient {
                 this.authHeader = "Basic " + encodedCredentials;
                 logger.log(Level.INFO, "Initialized Basic Authentication");
                 break;
-                
+
             case "apikey":
-                this.authHeader = "apikey " + config.getApiKey();
+                this.authHeader = config.getApiKey();
                 logger.log(Level.INFO, "Initialized API Key Authentication");
                 break;
-                
+
             case "oauth":
                 this.oauthTokenUrl = config.getOauthTokenUrl();
                 this.oauthClientId = config.getOauthClientId();
                 this.oauthClientSecret = config.getOauthClientSecret();
                 logger.log(Level.INFO, "Initialized OAuth 2.0 Authentication");
                 break;
-                
+
             default:
                 logger.log(Level.WARNING, "Unknown auth type: " + authType + ", defaulting to basic");
                 this.authType = "basic";
+                String fallbackCredentials = config.getUsername() + ":" + config.getPassword();
+                String fallbackEncodedCredentials = Base64.getEncoder()
+                        .encodeToString(fallbackCredentials.getBytes(StandardCharsets.UTF_8));
+                this.authHeader = "Basic " + fallbackEncodedCredentials;
         }
     }
     
@@ -146,22 +193,24 @@ public class MaximoHttpClient {
         HttpRequest.Builder builder = HttpRequest.newBuilder()
                 .uri(URI.create(url))
                 .header("Accept", "application/json")
-                .header("Content-Type", "application/json");
-        
-        // Add Maximo-specific headers
-        if (maximoOrgId != null && !maximoOrgId.isEmpty()) {
-            builder.header("x-public-uri", baseUrl);
-        }
-        
-        if (authType.equals("oauth")) {
+                .header("Content-Type", "application/json")
+                .header("x-public-uri", baseUrl);
+
+        if (authType.equalsIgnoreCase("oauth")) {
             return getOAuthToken().thenApply(token -> {
                 builder.header("Authorization", "Bearer " + token);
                 return builder;
             });
-        } else {
-            builder.header("Authorization", authHeader);
+        }
+
+        if (authType.equalsIgnoreCase("apikey")) {
+            builder.header("apikey", authHeader);
             return CompletableFuture.completedFuture(builder);
         }
+
+        builder.header("Authorization", authHeader);
+        builder.header("maxauth", authHeader.replaceFirst("^Basic\\s+", ""));
+        return CompletableFuture.completedFuture(builder);
     }
     
     /**
@@ -253,7 +302,7 @@ public class MaximoHttpClient {
         logger.log(Level.INFO, "Testing connection to Maximo");
         
         // Test with a simple query to the incident API
-        String testPath = "/maximo/oslc/os/mxincident?oslc.select=ticketid&oslc.pageSize=1";
+        String testPath = "/maximo/oslc/os/mxincident?oslc.select=ticketid&oslc.pageSize=1&_format=json&lean=1";
         
         return get(testPath)
                 .thenApply(response -> {
@@ -261,9 +310,14 @@ public class MaximoHttpClient {
                     if (success) {
                         logger.log(Level.INFO, "Connection test successful");
                     } else {
-                        logger.log(Level.WARNING, "Connection test failed with status: " + 
+                        logger.log(Level.WARNING, "Connection test failed with status: " +
                                 response.statusCode());
                         logger.log(Level.WARNING, "Response: " + response.body());
+                        if (response.statusCode() == 302) {
+                            logger.log(Level.WARNING,
+                                    "Maximo returned HTTP 302 redirect. This usually indicates MAS/OIDC authentication is required. "
+                                            + "Use authType=apikey with a valid Maximo API key, or configure OAuth if supported.");
+                        }
                     }
                     return success;
                 })
