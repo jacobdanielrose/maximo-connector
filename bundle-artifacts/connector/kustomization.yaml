@@ -35,6 +35,12 @@ vars:
 patches:
 - patch: |-
     - op: replace
+      path: /spec/template/spec/volumes/2/projected/sources/1/secret/name
+      value: CONNECTOR-INSTANCE-SECRET-NAME
+  target:
+    kind: Deployment
+- patch: |-
+    - op: replace
       path: /spec/template/spec/volumes/4/secret/secretName
       value: AIOPS-DYNAMIC-REPLACE-ELASTICSEARCHSECRETNAME
   target:
