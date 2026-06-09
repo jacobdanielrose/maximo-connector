@@ -35,7 +35,7 @@ vars:
 patches:
 - patch: |-
     - op: replace
-      path: /spec/template/spec/volumes/2/projected/sources/1/secret/name
+      path: /spec/template/spec/volumes/3/projected/sources/1/secret/name
       value: CONNECTOR-INSTANCE-SECRET-NAME
   target:
     kind: Deployment
