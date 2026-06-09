@@ -10,7 +10,7 @@ spec:
     path: /h/metrics
     scheme: https
     tlsConfig:
-      serverName: "$(SERVICE_NAME).$(SERVICE_NAMESPACE).svc"
+      serverName: "java-grpc-conn-template.ibm-aiops.svc"
       ca:
         configMap:
           name: aiopsedge-openshift-ca-cert
