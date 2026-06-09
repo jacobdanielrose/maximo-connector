@@ -175,64 +175,56 @@ spec:
         isURL: true
       - id: authType
         element: input
-        type: radio
+        type: text
         label: "Authentication Type"
-        items:
-          - "Basic Authentication"
-          - "API Key"
-          - "OAuth 2.0"
-        itemKeys: ["basic", "apikey", "oauth"]
+        helperText: "Enter: basic, apikey, or oauth"
+        placeholder: "basic"
+        defaultValue: "basic"
         apiMapping: connection_config.authType
         formStep: addConnection
-        form:
-          - id: basic
-            rows:
-              - id: username
-                element: input
-                type: text
-                label: "Username"
-                placeholder: "Enter Maximo username"
-                apiMapping: connection_config.username
-                isRequired: true
-              - id: password
-                element: input
-                type: password
-                label: "Password"
-                helperText: "Enter Maximo password"
-                apiMapping: connection_config.password
-                isRequired: true
-          - id: apikey
-            rows:
-              - id: apiKey
-                element: input
-                type: password
-                label: "API Key"
-                helperText: "Enter your Maximo API Key"
-                apiMapping: connection_config.apiKey
-                isRequired: true
-          - id: oauth
-            rows:
-              - id: oauthTokenUrl
-                element: input
-                type: text
-                label: "OAuth Token URL"
-                placeholder: "https://maximo.example.com/oauth/token"
-                apiMapping: connection_config.oauthTokenUrl
-                isRequired: true
-              - id: oauthClientId
-                element: input
-                type: text
-                label: "Client ID"
-                placeholder: "Enter OAuth Client ID"
-                apiMapping: connection_config.oauthClientId
-                isRequired: true
-              - id: oauthClientSecret
-                element: input
-                type: password
-                label: "Client Secret"
-                helperText: "Enter OAuth Client Secret"
-                apiMapping: connection_config.oauthClientSecret
-                isRequired: true
+        isRequired: true
+      - id: username
+        element: input
+        type: text
+        label: "Username (for Basic Auth)"
+        placeholder: "Enter Maximo username"
+        apiMapping: connection_config.username
+        formStep: addConnection
+      - id: password
+        element: input
+        type: password
+        label: "Password (for Basic Auth)"
+        helperText: "Enter Maximo password"
+        apiMapping: connection_config.password
+        formStep: addConnection
+      - id: apiKey
+        element: input
+        type: password
+        label: "API Key (for API Key Auth)"
+        helperText: "Enter your Maximo API Key"
+        apiMapping: connection_config.apiKey
+        formStep: addConnection
+      - id: oauthTokenUrl
+        element: input
+        type: text
+        label: "OAuth Token URL (for OAuth)"
+        placeholder: "https://maximo.example.com/oauth/token"
+        apiMapping: connection_config.oauthTokenUrl
+        formStep: addConnection
+      - id: oauthClientId
+        element: input
+        type: text
+        label: "OAuth Client ID (for OAuth)"
+        placeholder: "Enter OAuth Client ID"
+        apiMapping: connection_config.oauthClientId
+        formStep: addConnection
+      - id: oauthClientSecret
+        element: input
+        type: password
+        label: "OAuth Client Secret (for OAuth)"
+        helperText: "Enter OAuth Client Secret"
+        apiMapping: connection_config.oauthClientSecret
+        formStep: addConnection
       - id: maximoOrgId
         element: input
         type: text
