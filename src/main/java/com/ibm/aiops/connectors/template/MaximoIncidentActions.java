@@ -261,7 +261,7 @@ public class MaximoIncidentActions implements Runnable {
             
             // POST to Maximo
             HttpResponse<String> response = maximoClient.post(
-                    "/maximo/oslc/os/mxincident", requestBody).get();
+                    "/oslc/os/mxincident", requestBody).get();
             
             if (response.statusCode() == 201 || response.statusCode() == 200) {
                 logger.log(Level.INFO, "Maximo incident created successfully");
@@ -311,7 +311,7 @@ public class MaximoIncidentActions implements Runnable {
             logger.log(Level.INFO, "Updating Maximo incident " + ticketId + " with: " + requestBody);
             
             // PATCH to Maximo
-            String path = "/maximo/oslc/os/mxincident/" + ticketId;
+            String path = "/oslc/os/mxincident/" + ticketId;
             HttpResponse<String> response = maximoClient.patch(path, requestBody).get();
             
             if (response.statusCode() == 200) {
@@ -357,7 +357,7 @@ public class MaximoIncidentActions implements Runnable {
             logger.log(Level.INFO, "Closing Maximo incident " + ticketId + " with: " + requestBody);
             
             // PATCH to Maximo
-            String path = "/maximo/oslc/os/mxincident/" + ticketId;
+            String path = "/oslc/os/mxincident/" + ticketId;
             HttpResponse<String> response = maximoClient.patch(path, requestBody).get();
             
             if (response.statusCode() == 200) {
