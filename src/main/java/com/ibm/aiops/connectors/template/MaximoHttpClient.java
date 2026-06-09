@@ -66,6 +66,7 @@ public class MaximoHttpClient {
         this.httpClient = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(30))
                 .sslContext(sslContext)
+                .followRedirects(HttpClient.Redirect.NORMAL)
                 .build();
         
         this.baseUrl = config.getUrl().replaceAll("/$", "");
