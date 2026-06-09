@@ -193,7 +193,6 @@ spec:
                 label: "Username"
                 placeholder: "Enter Maximo username"
                 apiMapping: connection_config.username
-                formStep: addConnection
                 isRequired: true
               - id: password
                 element: input
@@ -201,7 +200,6 @@ spec:
                 label: "Password"
                 helperText: "Enter Maximo password"
                 apiMapping: connection_config.password
-                formStep: addConnection
                 isRequired: true
           - id: apikey
             rows:
@@ -211,7 +209,6 @@ spec:
                 label: "API Key"
                 helperText: "Enter your Maximo API Key"
                 apiMapping: connection_config.apiKey
-                formStep: addConnection
                 isRequired: true
           - id: oauth
             rows:
@@ -221,7 +218,6 @@ spec:
                 label: "OAuth Token URL"
                 placeholder: "https://maximo.example.com/oauth/token"
                 apiMapping: connection_config.oauthTokenUrl
-                formStep: addConnection
                 isRequired: true
               - id: oauthClientId
                 element: input
@@ -229,7 +225,6 @@ spec:
                 label: "Client ID"
                 placeholder: "Enter OAuth Client ID"
                 apiMapping: connection_config.oauthClientId
-                formStep: addConnection
                 isRequired: true
               - id: oauthClientSecret
                 element: input
@@ -237,7 +232,6 @@ spec:
                 label: "Client Secret"
                 helperText: "Enter OAuth Client Secret"
                 apiMapping: connection_config.oauthClientSecret
-                formStep: addConnection
                 isRequired: true
       - id: maximoOrgId
         element: input
