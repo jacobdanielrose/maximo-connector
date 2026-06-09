@@ -357,7 +357,7 @@ public class MaximoIncidentActions implements Runnable {
             logger.log(Level.INFO, "Closing Maximo incident " + ticketId + " with: " + requestBody);
             
             // PATCH to Maximo
-            String path = "/oslc/os/mxincident/" + ticketId;
+            String path = "/maximo/oslc/os/mxincident/" + ticketId;
             HttpResponse<String> response = maximoClient.patch(path, requestBody).get();
             
             if (response.statusCode() == 200) {

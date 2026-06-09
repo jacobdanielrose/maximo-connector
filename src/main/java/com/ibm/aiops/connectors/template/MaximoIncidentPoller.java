@@ -131,7 +131,7 @@ public class MaximoIncidentPoller implements Runnable {
      * Build OSLC query based on collection mode and date range
      */
     private String buildOSLCQuery() {
-        StringBuilder query = new StringBuilder("/oslc/os/mxincident?");
+        StringBuilder query = new StringBuilder("/maximo/oslc/os/mxincident?");
         
         // Select fields to retrieve
         query.append("oslc.select=ticketid,description,description_longdescription,");

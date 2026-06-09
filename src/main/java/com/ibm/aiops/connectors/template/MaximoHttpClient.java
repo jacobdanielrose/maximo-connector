@@ -302,7 +302,7 @@ public class MaximoHttpClient {
         logger.log(Level.INFO, "Testing connection to Maximo");
         
         // Test with a simple query to the incident API
-        String testPath = "/oslc/os/mxincident?oslc.select=ticketid&oslc.pageSize=1&_format=json&lean=1";
+        String testPath = "/maximo/oslc/os/mxincident?oslc.select=ticketid&oslc.pageSize=1&_format=json&lean=1";
         
         return get(testPath)
                 .thenApply(response -> {
